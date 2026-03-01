@@ -1,70 +1,27 @@
-import { useEffect, useState } from "react";
+import { useContext } from "react"
+import { AuthContext } from "../context/AuthContext"
+import Register from "./components/Register"
+import Login from "./components/Login"
 
 const App = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    const savedUsers = localStorage.getItem("users"); 
-
-    if(savedUsers){
-      setUsers(JSON.parse(savedUsers))
-    }
-
-  }, [])
-  
-  useEffect(() => {
-    localStorage.setItem("users",JSON.stringify(users))
-  }, [users])
-  
-
-  const handleFormSubmit = (e) => {
-    console.log(e);
-    
-    e.preventDefault();
-    const newUser = {
-      id: users.length + 1,
-      newUsername: username,
-      newPassword: password,
-    };
-    setUsers(prev => [...prev,newUser]);
-    setUsername("");
-    setPassword("");
-  };
+  const{currentUser,logout} = useContext(AuthContext)
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
-      <div className = "bg-white w-80 p-6 rounded-xl shadow-md">
-      <p className="text-3xl font-bold text-center mb-4">Form</p>
-        <form onSubmit={handleFormSubmit} className="flex flex-col gap-3">
-          <label htmlFor="username" className = "text-sm font-medium">Username</label>
-          <input
-            type="text"
-            value={username}
-            id="username"
-            onChange={(e) => setUsername(e.target.value)}
-            className="border px-4"
-          />
-
-          <label htmlFor="password" className = "text-sm font-medium">Password</label>
-          <input
-            type="password"
-            id="password"
-           
-            onChange={(e) => setPassword(e.target.value)}
-            className="border px-4"
-          />
-
-          <button type = "Submit" className = "bg-blue-500 text-white py-2 rounded-md px-1 hover:bg-blue-600 transition duration-200">submit</button>
-        </form>
-
-        <p className = "m-3">total no of users : <span className = "text-xl font-bold">{users.length}</span></p>
-        {users.map(user => <p key={user.id} className = "text-sm font-semibold text-gray-500">{user.newUsername}</p>)}
-
-      </div>
+    <div>
+      {currentUser ? (
+        <>
+        <p>Welcome {currentUser.username}</p>
+        <button onClick = {logout}>logout</button>
+        </>
+      ):
+      (
+        <>
+        <Register />
+        <Login />
+        </>
+      )}
     </div>
-  );
-};
+  )
+}
 
-export default App;
+export default App
