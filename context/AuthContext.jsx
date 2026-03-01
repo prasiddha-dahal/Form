@@ -1,66 +1,55 @@
-import js from "@eslint/js";
-import { createContext, useDebugValue, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 
 export const AuthContext = createContext();
 
-export const AuthProvider = ({children}) => {
-    const [users, setUsers] = useState([]);
-    const [currentUser , setCurrentUser] = useState(null);
+export const AuthProvider = ({ children }) => {
+  const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
 
-    //loading saved users and saved current user form the local storage
-    useEffect(() => {
-        const savedUsers = localStorage.getItem("users");
-        const savedCurrentUser = localStorage.getItem("currenUser");
+  // Load users and logged-in user from localStorage
+  useEffect(() => {
+    const savedUsers = localStorage.getItem("users");
+    const savedCurrentUser = localStorage.getItem("currentUser");
 
-        if(savedUsers) setUsers(JSON.parse(savedUsers));
-        if(savedCurrentUser) setUsers(JSON.parse(savedCurrentUser));
-    
-    }, [])
-    
-    //saving users to local storage
-    useEffect(() => {
-        localStorage.setItem("users",JSON.stringify(users));
-    }, [users]);
+    if (savedUsers) setUsers(JSON.parse(savedUsers));
+    if (savedCurrentUser) setCurrentUser(JSON.parse(savedCurrentUser));
+  }, []);
 
-    //saving currentUsers to local storage
-    useEffect(() => {
-        localStorage.setItem("currentUser",JSON.stringify(currentUser));
-    }, [currentUser]);
+  // Save users and currentUser to localStorage
+  useEffect(() => {
+    localStorage.setItem("users", JSON.stringify(users));
+    localStorage.setItem("currentUser", JSON.stringify(currentUser));
+  }, [users, currentUser]);
 
-    //register function 
-    const register = (username,password) => {
-        const newUser = {
-            id : users.length + 1,
-            username,
-            password
-        }
+  // Register user and auto-login
+  const register = (username, password) => {
+    const newUser = {
+      id: users.length + 1,
+      username,
+      password,
+    };
+    setUsers(prev => [...prev, newUser]);
+    setCurrentUser(newUser); 
+  };
 
-        setUsers(prev => [...prev,newUser]);
+  // Login user
+  const login = (username, password) => {
+    const foundUser = users.find(
+      user => user.username === username && user.password === password
+    );
+    if (foundUser) {
+      setCurrentUser(foundUser);
+      return true;
     }
+    return false;
+  };
 
-    //login function 
-    const login = (username,password) => {
-        const foundUser = users.find(
-            user => user.username === username && user.password === password
-        );
+  // Logout user
+  const logout = () => setCurrentUser(null);
 
-        if(foundUser){
-            setCurrentUser(foundUser);
-            return true;
-        }else{
-            return false;
-        }
-    }
-
-    //logut function 
-    const logout = () =>{
-        setCurrentUser(null);
-    }
-
-
-    return(
-            <AuthContext.Provider value = {{users,login,logout,register,currentUser}}>
-                {children}
-            </AuthContext.Provider>
-    )
-}
+  return (
+    <AuthContext.Provider value={{ users, currentUser, register, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
